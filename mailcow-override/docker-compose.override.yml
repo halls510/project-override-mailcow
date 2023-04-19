@@ -1,0 +1,28 @@
+version: '2.1'
+
+services:
+    nginx-mailcow:
+      networks:
+        # add Traefik's network
+        web:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.moo.rule=Host(`srvmail.nicoledepaula.adv.br`)
+        - traefik.http.routers.moo.tls=true
+        - traefik.http.routers.moo.tls.certresolver=lets-encrypt
+        - traefik.http.services.moo.loadbalancer.server.port=8080      
+        - traefik.http.routers.moo.entrypoints=websecure
+        - traefik.docker.network=web
+
+    certdumper:
+        image: humenius/traefik-certs-dumper
+        container_name: traefik_certdumper
+        network_mode: none         
+          - ../../traefik/:/traefik:ro         
+          - ./data/assets/ssl/:/output:rw
+        environment:         
+          - DOMAIN=srvmail.nicoledepaula.adv.br
+
+networks:
+  web:
+    external: true
